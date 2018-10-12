@@ -1,5 +1,5 @@
 import { set } from '@ember/object';
-import { warn } from '@ember/debug';
+import { debug, warn } from '@ember/debug';
 import { get } from '@ember/object';
 import EmberObject from '@ember/object';
 import {
@@ -244,9 +244,12 @@ export default EmberObject.extend({
       set( node, 'rdfaBlocks', this.getRdfaBlockList( node ) );
     };
 
-    preprocessNode(richNode);
-    (get(richNode, 'children') || []).map( (node) => processChildNode(node) );
-    finishChildSteps( richNode );
+    richNode.rdfaBlocks = [];
+    if (richNode.start <= end && richNode.end >= start) {
+      preprocessNode(richNode);
+      (get(richNode, 'children') || []).map( (node) => processChildNode(node) );
+      finishChildSteps( richNode );
+    }
 
     return get(richNode, 'rdfaBlocks');
   },
@@ -536,12 +539,12 @@ export default EmberObject.extend({
 
         if (i < 0) { // no prefix defined. Use default.
           if (prefixes[''] == null)
-            warn(`No default RDFa prefix defined`, { id: 'rdfa.missingPrefix' });
+            debug(`No default RDFa prefix defined`, { id: 'rdfa.missingPrefix' });
           uri = prefixes[''] + uri;
         } else {
           const key = uri.substr(0, i);
           if (prefixes[key] == null)
-            warn(`No RDFa prefix '${key}' defined`, { id: 'rdfa.missingPrefix' });
+            debug(`No RDFa prefix '${key}' defined`, { id: 'rdfa.missingPrefix' });
           uri = prefixes[key] + uri.substr(i + 1);
         }
 
